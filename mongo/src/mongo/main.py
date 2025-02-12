@@ -77,13 +77,10 @@ class Mongo:
     @function
     async def service(self) -> dagger.Service:
         """Expose a mongo container as a service"""
-        # tiny = dag.http("https://github.com/krallin/tini/releases/download/v0.19.0/tini")
 
         return (
             self.
             __ctr.
-            # with_file("/tiny", tiny, permissions=0o551).
-            # with_entrypoint(["/tiny", "-s", "--", "bash", "/usr/local/bin/docker-entrypoint.sh"]).
             as_service(
                 use_entrypoint=True,
                 args=["mongod"],
@@ -97,19 +94,21 @@ class Mongo:
         return self.__ctr
 
     @function
-    async def test(self) -> str:
-        """Only for poc / troubleshot"""
+    async def ci_test(self) -> str:
+        """Only for poc / troubleshot / ci"""
+        svc = await self.service()
+        uri = await self.uri()
         return await (
             self.
             __ctr.
             with_service_binding(
-                "mongodb.service",
-                await self.service(),
+                await svc.hostname(),
+                svc,
             ).
             with_exec([
                 "mongosh",
-                "mongodb://mongo:mongo@mongodb.service:27017/",
-                "--eval"
+                await uri.plaintext(),
+                "--eval",
                 "\"db.runCommand({ ping: 1 })\"",
             ]).
             stdout()
