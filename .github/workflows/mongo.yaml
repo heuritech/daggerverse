@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'mongo/**'
+  pull_request:
+    paths:
+      - 'mongo/**'
+
+jobs:
+  test:
+    name: Mongo test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Call Dagger Function
+        uses: dagger/dagger-for-github@v5
+        with:
+          version: "0.15.3"
+          verb: call
+          module: ./mongo
+          args: ci-test
+#          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
