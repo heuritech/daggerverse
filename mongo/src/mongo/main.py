@@ -83,7 +83,7 @@ class Mongo:
             __ctr.
             as_service(
                 use_entrypoint=True,
-                args=["mongod"],
+                args=["mongod", "--quiet"],
             )
             .with_hostname(self.hostname)
         )
